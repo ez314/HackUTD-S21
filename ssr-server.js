@@ -58,25 +58,15 @@ app
         req.session.bearer_token = json.access_token;
         console.log(json);
     
-        resp.redirect('/page'); // Redirecting to main page
+        resp.redirect('/'); // Redirecting to main page
     });
 
-    server.get('/page', async (req, resp) => {
+    server.get('/', async (req, res) => {
         if(!req.session.bearer_token)
-            return resp.redirect('/login') // Redirect to login page
-        
-        const data = await fetch(`https://discord.com/api/users/@me`, {headers: { Authorization: `Bearer ${req.session.bearer_token}` } }); // Fetching user data
-        const json = await data.json();
-    
-        if(!json.username) // This can happen if the Bearer token has expired or user has not given permission "indentity"
-            return resp.redirect('/login') // Redirect to login page
-    
-        resp.send(`<h1>Hello, ${json.username}#${json.discriminator}!</h1>` +
-                  `<img src="https://cdn.discordapp.com/avatars/${json.id}/${json.avatar}?size=512">`) // Show user's nametag and avatar
+            return res.redirect('/login') // Redirect to login page
+        app.render(req, res, '/page', req.session.bearer_token);
     })
 
-
-    //
     server.get("*", (req, res) => {
       return handle(req, res);
     });
