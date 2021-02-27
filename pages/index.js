@@ -18,12 +18,17 @@ export default function Welcome(props) {
   }, []);
 
   const call = async () => {
-    const data = await fetch(`https://discord.com/api/users/@me`, {headers: { Authorization: `Bearer ${cookieCutter.get("token")}` } }); // Fetching user data
-        const json = await data.json();
-        if(!json.username) // This can happen if the Bearer token has expired or user has not given permission "indentity"
-            return Router.push('/api/login') // Redirect to login page
-            setUser(json);
-       console.log(json);
+    const data = await fetch(`https://discord.com/api/users/@me`, 
+      {headers: { Authorization: `Bearer ${cookieCutter.get("token")}` } });
+    const json = await data.json();
+    if(!json.username) 
+        return Router.push('/api/login') // Redirect to login page
+    setUser(json);
+    console.log(json);
+
+    const guilds = await fetch(`https://discord.com/api/users/@me/guilds`, 
+    {headers: { Authorization: `Bearer ${cookieCutter.get("token")}` } }); 
+    console.log(await guilds.json());
   }
 
   return (
