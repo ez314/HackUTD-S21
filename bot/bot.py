@@ -164,10 +164,11 @@ async def create(ctx, name, moderator):
     # create txt channels
     await guild.create_text_channel('discussion', category=category)
     faqChannel = await guild.create_text_channel('faq', category=category)
-    await faqChannel.set_permissions(role, send_messages=False)
+    faqPerms = faqChannel.overwrites_for(role)
+    faqPerms.send_messages = False
+    await faqChannel.set_permissions(role, overwrite=faqPerms)
     await guild.create_voice_channel('Study Room 1', category=category)
     await guild.create_voice_channel('Study Room 2', category=category)
-    
 
 
     # TODO: add results to firestore
