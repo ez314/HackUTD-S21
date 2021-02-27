@@ -20,17 +20,32 @@ async def on_ready():
     print('Logged in as {}!'.format(bot.user))
 
 @bot.command(name='faq')
-async def faq(ctx, channel, msg):
+async def faq(ctx, channel):
     channel = int(re.match(r'<#(\d*)>', channel).groups()[0])
     chan: discord.TextChannel = bot.get_channel(channel)
 
-    doc_ref = db.collection(u'faq').document(msg)
+    # make sure the message is not empty and is in the same channel
+    def not_empty(m):
+        return len(m.content) > 0 and m.channel == chan
+
+    # get question
+    await chan.send("What is the question?")
+    question = await bot.wait_for('message', check=not_empty)
+    question = question.content
+
+    # get answer
+    await chan.send("What is the answer?")
+    answer = await bot.wait_for('message', check=not_empty)
+    answer = answer.content
+
+    # store in firestore
+    doc_ref = db.collection(u'faq').document(question)
     doc_ref.set({
-        u'title': msg
+        u'question': question,
+        u'answer': answer
     })
 
-    print(channel, msg)
-    await chan.send(f"stored faq with title {msg}") 
+    await chan.send(f"Question \"{question}\" stored successfully.") 
 
 @bot.command(name='send')
 async def send(ctx, channel, message):
