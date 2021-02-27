@@ -129,3 +129,5 @@ dmypy.json
 .pyre/
 
 config.json
+firebase_admin.json
+.vscode/
