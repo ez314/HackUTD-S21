@@ -29,35 +29,69 @@ async def on_ready():
 async def faq(ctx, channel):
     channel = int(re.match(r'<#(\d*)>', channel).groups()[0])
     chan: discord.TextChannel = bot.get_channel(channel)
+    category = ctx.channel.category
+
+    # validate the category
+    if not category:
+        await ctx.send('This command doesn\'t work here!')
+        return
+
 
     # make sure the message is not empty and is in the same channel
-    def not_empty(m):
-        return len(m.content) > 0 and m.channel == chan and m.author != bot.user
+    def validate_msg(m):
+        return m.content and m.channel == ctx.channel and m.author == ctx.author
+    def validate_url(m):
+        return validate_msg(m) and re.match(r'https://(canary.)?discord.com/channels/\d{17,20}/\d{17,20}/\d{17,20}', m.content)
+
+
+    preview = discord.Embed(
+        title = '<Question>',
+        description = '<Answer>',
+        color = discord.Color.random(),
+    )
+    preview.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+
+    previewMsg = await ctx.send(embed=preview)
 
     # get question
-    await chan.send("What is the question?")
-    question = await bot.wait_for('message', check=not_empty)
-    question = question.content
+    queryMsg = await ctx.send("What is the question?")
+    questionMsg = await bot.wait_for('message', check=validate_msg)
+    question = questionMsg.content
+    await questionMsg.delete()
+
+    preview.title = question
+    await previewMsg.edit(embed=preview)
 
     # get answer
-    await chan.send("What is the answer?")
-    answer = await bot.wait_for('message', check=not_empty)
-    answer = answer.content
+    await queryMsg.edit(content="What is the answer?")
+    answerMsg = await bot.wait_for('message', check=validate_msg)
+    answer = answerMsg.content
+    await answerMsg.delete()
+
+    preview.description = answer
+    await previewMsg.edit(embed=preview)
 
     # get mesage link
-    await chan.send("What was the message link to the original question?")
-    link = await bot.wait_for('message', check=not_empty)
-    link = link.content
+    await queryMsg.edit(content="What is the message link to the original question?")
+    linkMsg = await bot.wait_for('message', check=validate_url)
+    link = linkMsg.content
+    await linkMsg.delete()
 
+    preview.description += f'\n[Jump to context]({link})'
+    await previewMsg.edit(embed=preview)
+    
     # store in firestore
-    doc_ref = db.collection(u'faq').document(question)
+    doc_ref = db.collection('faq').document(question)
     doc_ref.set({
         u'question': question,
         u'answer': answer,
-        u'link': link
+        u'link': link,
+        u'timestamp': firestore.SERVER_TIMESTAMP
     })
 
-    await chan.send(f"Question \"{question}\" stored successfully.")
+    # TODO: Send the embed in FAQ channel
+
+    await queryMsg.edit(content=f"Question \"{question}\" stored successfully.")
 
 
 @bot.command(name='show')
@@ -65,15 +99,18 @@ async def show_faq(ctx, channel):
     channel = int(re.match(r'<#(\d*)>', channel).groups()[0])
     chan: discord.TextChannel = bot.get_channel(channel)
 
-    users_ref = db.collection(u'faq')
-    docs = users_ref.stream()
+    ref = db.collection(u'faq')
+    docs = ref.where('channel', '==', str(chan.id)).order_by('timestamp', direction=firestore.Query.DESCENDING).stream()
     result = ""
     for doc in docs:
         info = doc.to_dict()
         print(info)
         result += f"Question: {info['question']} \nAnswer: {info['answer']} \nLink: {info['link']} \n\n"
-    print(result)
-    await chan.send(result)
+    
+    if result:
+        await ctx.send(result)
+    else:
+        await ctx.send("No FAQ entries found.")
 
 
 @bot.command(name='delete')
@@ -122,29 +159,29 @@ async def send(ctx, channel, message):
 @bot.command(name='create')
 async def create(ctx, name, moderator):
     guild = ctx.guild
-    # TODO: Make sure name isn't taken in firestore
-    # first resolve the moderator to a member
+
+    # make sure this doesn't exist yet
+    docs = db.collection('faq').where('name', '==', name).get()
+    if docs:
+        await ctx.send("That name is taken.")
+        return
+
 
     print(moderator)
     
     # resolve ping
     match = re.match(r'<@!?(\d{17,20})>', moderator)
     if match:
-        print(1)
         modID = int(match.groups()[0])
-        print(modID)
-        print([x.id for x in guild.members])
         mod = guild.get_member(modID)
     # resolve ID
     else:
         match = re.match(r'\d{17,20}', moderator )
         if match:
-            print(2)
             modID = int(moderator)
             mod = guild.get_member(modID)
         # resolve by name
         else:
-            print(3)
             mod = guild.get_member_named(moderator)
 
     if not mod:
@@ -162,16 +199,28 @@ async def create(ctx, name, moderator):
     await category.set_permissions(mod, manage_channels=True, manage_messages=True)
 
     # create txt channels
-    await guild.create_text_channel('discussion', category=category)
-    faqChannel = await guild.create_text_channel('faq', category=category)
+    await category.create_text_channel('discussion')
+    faqChannel = await guild.create_text_channel('faq')
     faqPerms = faqChannel.overwrites_for(role)
     faqPerms.send_messages = False
     await faqChannel.set_permissions(role, overwrite=faqPerms)
-    await guild.create_voice_channel('Study Room 1', category=category)
-    await guild.create_voice_channel('Study Room 2', category=category)
+    await category.create_voice_channel('Study Room 1')
+    await category.create_voice_channel('Study Room 2')
 
 
-    # TODO: add results to firestore
+    # add results to firestore
+    db.collection('faq').document(str(category.id)).set({
+        'name': name,
+        'moderator': mod.id,
+        'role': role.id,
+        'category': {
+            'id': category.id,
+            'name': category.name
+        },
+        'faqID': faqChannel.id,
+    })
+
+    # TODO: register reaction role
 
     await ctx.send('Done')
 # Start the bot
