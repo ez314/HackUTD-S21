@@ -213,7 +213,7 @@ async def create(ctx, name, moderator):
 
     # create txt channels
     await category.create_text_channel('discussion')
-    faqChannel = await guild.create_text_channel('faq')
+    faqChannel = await category.create_text_channel('faq')
     faqPerms = faqChannel.overwrites_for(role)
     faqPerms.send_messages = False
     await faqChannel.set_permissions(role, overwrite=faqPerms)
