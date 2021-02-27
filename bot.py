@@ -68,7 +68,6 @@ async def create(ctx, name, moderator):
     # create txt channels
     await guild.create_text_channel('discussion', category=category)
     faqChannel = await guild.create_text_channel('faq', category=category)
-    faqChannel.
     await faqChannel.set_permissions(role, send_messages=False)
     await guild.create_voice_channel('Study Room 1', category=category)
     await guild.create_voice_channel('Study Room 2', category=category)
