@@ -223,5 +223,81 @@ async def create(ctx, name, moderator):
     # TODO: register reaction role
 
     await ctx.send('Done')
+    
+    
+# reaction roles
+
+# add roles
+@bot.event
+async def on_raw_reaction_add(payload):
+    message_id = payload.message_id
+
+    # message id of discord message
+    if message_id == 815329016973754369:
+        guild_id = payload.guild_id
+        guild = discord.utils.find(lambda g: g.id == guild_id, bot.guilds)
+        print('Reacted to text')
+
+        # role selection
+        if payload.emoji.name == 'CS1336':
+            role = discord.utils.get(guild.roles, name='CS 1336')
+        
+        elif payload.emoji.name == 'CS2336':
+            role = discord.utils.get(guild.roles, name='CS 2336')
+        
+        # role assignment
+        if role is not None:
+            member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
+
+            if member is not None:
+                await member.add_roles(role)
+                print('done')
+            
+            else:
+                print('Member not found.')
+        
+        else:
+            print('Role not found.')
+
+
+# remove roles
+@bot.event
+async def on_raw_reaction_remove(payload):
+    message_id = payload.message_id
+
+    # message id of discord message
+    if message_id == 815329016973754369:
+        guild_id = payload.guild_id
+        guild = discord.utils.find(lambda g: g.id == guild_id, bot.guilds)
+        print('Reacted to text')
+
+        # role selection
+        if payload.emoji.name == 'CS1336':
+            role = discord.utils.get(guild.roles, name='CS 1336')
+        
+        elif payload.emoji.name == 'CS2336':
+            role = discord.utils.get(guild.roles, name='CS 2336')
+
+        elif payload.emoji.name == 'prof1':
+            role = discord.utils.get(guild.roles, name='Professor 1')
+
+        elif payload.emoji.name == 'prof2':
+            role = discord.utils.get(guild.roles, name='Professor 2')
+        
+        
+        # role assignment
+        if role is not None:
+            member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
+
+            if member is not None:
+                await member.remove_roles(role)
+                print('Removed')
+            
+            else:
+                print('Member not found.')
+        
+        else:
+            print('Role not found.')
+
 # Start the bot
 bot.run(botconfig['token'], bot=True)
