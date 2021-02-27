@@ -12,7 +12,7 @@ intents = discord.Intents.all()
 
 # instantiate config & bot
 botconfig = json.load(open('config.json', 'r'))
-bot = commands.Bot(command_prefix='eric.', case_insensitive=True, intents=intents)
+bot = commands.Bot(command_prefix='.', case_insensitive=True, intents=intents)
 
 # initialize firebase
 cred = credentials.Certificate("firebase_admin.json")
@@ -26,15 +26,19 @@ async def on_ready():
 
 
 @bot.command(name='faq')
-async def faq(ctx, channel):
-    channel = int(re.match(r'<#(\d*)>', channel).groups()[0])
-    chan: discord.TextChannel = bot.get_channel(channel)
+async def faq(ctx):
     category = ctx.channel.category
 
-    # validate the category
+    # validate the category and extract faq channel
     if not category:
         await ctx.send('This command doesn\'t work here!')
         return
+    else:
+        faqChannels = [x for x in category.channels if x.name == 'faq']
+        if not faqChannels:
+            await ctx.send('This command doesn\'t work here!')
+            return
+        faqChannel = faqChannels[0]
 
 
     # make sure the message is not empty and is in the same channel
@@ -81,8 +85,7 @@ async def faq(ctx, channel):
     await previewMsg.edit(embed=preview)
     
     # store in firestore
-    doc_ref = db.collection('faq').document(question)
-    doc_ref.set({
+    db.collection('faq').document(str(category.id)).collection('faqs').add({
         u'question': question,
         u'answer': answer,
         u'link': link,
@@ -90,17 +93,27 @@ async def faq(ctx, channel):
     })
 
     # TODO: Send the embed in FAQ channel
+    await faqChannel.send(embed=preview)
 
     await queryMsg.edit(content=f"Question \"{question}\" stored successfully.")
 
 
 @bot.command(name='show')
-async def show_faq(ctx, channel):
-    channel = int(re.match(r'<#(\d*)>', channel).groups()[0])
-    chan: discord.TextChannel = bot.get_channel(channel)
+async def show_faq(ctx):
+    category = ctx.channel.category
 
-    ref = db.collection(u'faq')
-    docs = ref.where('channel', '==', str(chan.id)).order_by('timestamp', direction=firestore.Query.DESCENDING).stream()
+    # validate the category and extract faq channel
+    if not category:
+        await ctx.send('This command doesn\'t work here!')
+        return
+    else:
+        faqChannels = [x for x in category.channels if x.name == 'faq']
+        if not faqChannels:
+            await ctx.send('This command doesn\'t work here!')
+            return
+
+    ref = db.collection('faq').document(str(category.id)).collection('faqs')
+    docs = ref.order_by('timestamp', direction=firestore.Query.DESCENDING).stream()
     result = ""
     for doc in docs:
         info = doc.to_dict()
