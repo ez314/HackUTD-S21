@@ -5,7 +5,7 @@ export default function Navbar({ logout }) {
   return (
     <div className="bg-gray-700 flex justify-between align-middle mb-4 px-8 py-4">
       <img src="/solace_mark.png" class="h-14"/>
-      <div className="text-blue-50 font-bold tracking-wide inline-block align-middle text-5xl">Solace Dashboard</div>
+      <div className="z-10 place-self-center text-blue-50 font-bold tracking-wide inline-block align-middle text-5xl">Solace Dashboard</div>
       <button
         onClick={() => {
           cookieCutter.set("token", "");

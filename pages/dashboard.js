@@ -43,7 +43,7 @@ export default function Dashboard({ user }) {
             </h1>
           </div>
           <div className="flex-1 p-4 rounded-3xl bg-gray-700 mt-4">
-            <h1 className="text-2xl text-center font-bold mb-4">Course FAQs</h1>
+            <h1 className="text-3xl text-center font-bold mb-4">Course FAQs</h1>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 m-4">
               {courses !== null ? (
                 courses.map((course) => (
@@ -55,7 +55,7 @@ export default function Dashboard({ user }) {
                   //     {course.name}
                   //   </div>
                   // </Link>
-                  <div
+                  <div className="bg-gray-600 p-4 text-center rounded-lg shadow-3 text-xl hover:bg-gray-500 cursor-pointer"
                     onClick={(e) => {
                       setSelected(course);
                     }}
@@ -70,7 +70,7 @@ export default function Dashboard({ user }) {
           </div>
         </div>
         <div className="p-4 rounded-3xl bg-gray-700 mt-8 p-6">
-          <h1 className="text-2xl text-center font-bold mb-4">Weekly Agenda</h1>
+          <h1 className="text-3xl text-center font-bold mb-4">Weekly Agenda</h1>
           <div className="grid grid-cols-7 gap-4">
             {AGENDA.map((day, id) => (
               <div className={"rounded-xl shadow-md p-4 bg-gray-800"}>
