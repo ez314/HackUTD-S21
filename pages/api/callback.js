@@ -6,9 +6,6 @@ import URL from '../../lib/url'
 
 const dev = process.env.NODE_ENV !== "production";
 let redirect = `${URL}/api/callback`;
-if (!dev) {
-    redirect = ""; // SET DEPLOYED ENDPOINT TODO
-}
 
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
@@ -36,12 +33,12 @@ export default async function handler(req, res) {
       body: data,
     })
   ).json();
-  res.json({
-    "CLIENT_SECRET": CLIENT_SECRET,
-    "CLIENT_ID": CLIENT_ID,
-    "code": accessCode,
-    "returned": json
-  })
-  // res.setHeader('Set-Cookie', serialize('token', json.access_token, { path: '/' }));
-  // res.redirect("/"); // Redirecting to main page
+  // res.json({
+  //   "CLIENT_SECRET": CLIENT_SECRET,
+  //   "CLIENT_ID": CLIENT_ID,
+  //   "code": accessCode,
+  //   "returned": json
+  // })
+  res.setHeader('Set-Cookie', serialize('token', json.access_token, { path: '/' }));
+  res.redirect("/"); // Redirecting to main page
 }
