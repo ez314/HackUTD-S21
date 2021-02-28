@@ -12,7 +12,6 @@ export default async function handler(req, res) {
       querysnapshot.docs.forEach((query) => {
           result.push(query.data());
       })
-      console.log(result);
       res.json(result);
     })
     .catch((error) => {

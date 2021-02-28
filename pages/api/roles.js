@@ -2,9 +2,7 @@ import { db } from "../../lib/firebase";
 
 async function check(courses) {
   let result = [];
-  console.log(courses);
   for (let course of courses) {
-    console.log(course);
     await result.push(
       await db
         .collection("faq")

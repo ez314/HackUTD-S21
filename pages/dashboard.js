@@ -20,8 +20,6 @@ export default function Dashboard({ user }) {
       });
   }
 
-  console.log(dayOfWeek);
-
   return (
     <div className="text-center m-4">
       <div className="flex">
@@ -53,16 +51,16 @@ export default function Dashboard({ user }) {
           </div>
         </div>
       </div>
-      <div class="p-4 rounded-lg bg-blue-200 mt-8">
-        <h1 class="text-2xl text-center font-bold mb-4">Weekly Agenda</h1>
-        <div class="grid grid-cols-7 gap-4">
+      <div className="p-4 rounded-lg bg-blue-200 mt-8">
+        <h1 className="text-2xl text-center font-bold mb-4">Weekly Agenda</h1>
+        <div className="grid grid-cols-7 gap-4">
           {AGENDA.map((day, id) => (
-            <div class={"rounded-lg shadow-md p-4 bg-blue-100"}>
-              <h1 class="text-lg text-center font-semibold">{WEEKDAYS[id]}</h1>
+            <div className={"rounded-lg shadow-md p-4 bg-blue-100"}>
+              <h1 className="text-lg text-center font-semibold">{WEEKDAYS[id]}</h1>
               {day.map((item) => (
-                <div class="bg-pink-100 hover:bg-pink-200 cursor-pointer p-2 my-4 rounded-md shadow-sm">
-                  <p class="text-md font-bold">{item.course}</p>
-                  <span class="font-light text-md">{item.item}</span>
+                <div className="bg-pink-100 hover:bg-pink-200 cursor-pointer p-2 my-4 rounded-md shadow-sm">
+                  <p className="text-md font-bold">{item.course}</p>
+                  <span className="font-light text-md">{item.item}</span>
                 </div>
               ))}
             </div>
