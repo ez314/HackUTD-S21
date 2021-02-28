@@ -1,12 +1,12 @@
 require('dotenv').config();
+import URL from '../../lib/url';
+
 const config = require('../../config.json');
 const CLIENT_ID = process.env.CLIENT_ID;
 
 const dev = process.env.NODE_ENV !== "production";
-let redirect_url = "http://localhost:3000/api/callback";
-if (!dev) {
-    redirect_url = ""; // SET DEPLOYED ENDPOINT TODO
-}
+let redirect_url = `${URL}/api/callback`;
+
 const redirect = encodeURIComponent(redirect_url);
 
 export default async function handler(req, res) {

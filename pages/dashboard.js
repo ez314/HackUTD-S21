@@ -1,6 +1,7 @@
 import { data } from "autoprefixer";
 import Link from 'next/link';
 import { useEffect, useState } from "react";
+import URL from '../lib/url';
 
 export default function Dashboard({ user }) {
   const [courses, setCourses] = useState(null);
@@ -10,7 +11,7 @@ export default function Dashboard({ user }) {
   }
 
   if (user.id !== undefined && courses === null) {
-    fetch(`http://localhost:3000/api/roles?id=${user.id}`)
+    fetch(`{${URL}/api/roles?id=${user.id}`)
       .then((res) => res.json())
       .then((data) => {
         if (typeof data.map === "function") setCourses(data);
