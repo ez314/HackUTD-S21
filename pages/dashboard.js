@@ -31,7 +31,7 @@ export default function Dashboard({ user }) {
         info={selected}
         className={selected === null ? "hidden" : ""}
       />
-      <div className="text-gray-200 text-center m-4 px-16 py-8">
+      <div className="text-gray-200 text-center mt-4 mx-4 px-16 py-8">
         <div className="flex space-x-8 justify-between">
           <div className="flex-col">
             <img
@@ -69,7 +69,7 @@ export default function Dashboard({ user }) {
             </div>
           </div>
         </div>
-        <div className="p-4 rounded-3xl bg-gray-700 mt-8 p-6">
+        <div className="rounded-3xl bg-gray-700 mt-8 p-6">
           <h1 className="text-3xl text-center font-bold mb-4">Weekly Agenda</h1>
           <div className="grid grid-cols-7 gap-4">
             {AGENDA.map((day, id) => (
