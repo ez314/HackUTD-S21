@@ -4,9 +4,14 @@ async function check(courses) {
   let result = [];
   console.log(courses);
   for (let course of courses) {
-      console.log(course);
-    await result.push(await db
-      .collection("faq").doc(course).get().then(res => res.data()));
+    console.log(course);
+    await result.push(
+      await db
+        .collection("faq")
+        .doc(course)
+        .get()
+        .then((res) => res.data())
+    );
   }
   console.log(result);
   return result;
