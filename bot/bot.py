@@ -26,7 +26,13 @@ async def on_ready():
 
 
 @bot.command(name='faq')
-async def faq(ctx):
+async def faq(ctx, action='unknown'):
+    # validators for wizard
+    def validate_msg(m):
+        return m.content and m.channel == ctx.channel and m.author == ctx.author
+    def validate_url(m):
+        return validate_msg(m) and re.match(r'https://(canary.)?discord.com/channels/\d{17,20}/\d{17,20}/\d{17,20}', m.content)
+
     category = ctx.channel.category
 
     # validate the category and extract faq channel
@@ -40,134 +46,109 @@ async def faq(ctx):
             return
         faqChannel = faqChannels[0]
 
+    # behavior changes based on action
+    if action == 'add':
+        preview = discord.Embed(
+            title='<Question>',
+            description='<Answer>',
+            color=discord.Color.random(),
+        )
+        preview.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
 
-    # make sure the message is not empty and is in the same channel
-    def validate_msg(m):
-        return m.content and m.channel == ctx.channel and m.author == ctx.author
-    def validate_url(m):
-        return validate_msg(m) and re.match(r'https://(canary.)?discord.com/channels/\d{17,20}/\d{17,20}/\d{17,20}', m.content)
+        previewMsg = await ctx.send(embed=preview)
 
+        # get question
+        queryMsg = await ctx.send("What is the question?")
+        questionMsg = await bot.wait_for('message', check=validate_msg)
+        question = questionMsg.content
+        await questionMsg.delete()
 
-    preview = discord.Embed(
-        title = '<Question>',
-        description = '<Answer>',
-        color = discord.Color.random(),
-    )
-    preview.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+        preview.title = question
+        await previewMsg.edit(embed=preview)
 
-    previewMsg = await ctx.send(embed=preview)
+        # get answer
+        await queryMsg.edit(content="What is the answer?")
+        answerMsg = await bot.wait_for('message', check=validate_msg)
+        answer = answerMsg.content
+        await answerMsg.delete()
 
-    # get question
-    queryMsg = await ctx.send("What is the question?")
-    questionMsg = await bot.wait_for('message', check=validate_msg)
-    question = questionMsg.content
-    await questionMsg.delete()
+        preview.description = answer
+        await previewMsg.edit(embed=preview)
 
-    preview.title = question
-    await previewMsg.edit(embed=preview)
+        # get mesage link
+        await queryMsg.edit(content="What is the message link to the original question?")
+        linkMsg = await bot.wait_for('message', check=validate_url)
+        link = linkMsg.content
+        await linkMsg.delete()
 
-    # get answer
-    await queryMsg.edit(content="What is the answer?")
-    answerMsg = await bot.wait_for('message', check=validate_msg)
-    answer = answerMsg.content
-    await answerMsg.delete()
+        preview.description += f'\n[Jump to context]({link})'
+        await previewMsg.edit(embed=preview)
+        
+        # store in firestore
+        db.collection('faq').document(str(category.id)).collection('faqs').add({
+            u'question': question,
+            u'answer': answer,
+            u'link': link,
+            u'author': {
+                'name': ctx.author.name, 
+                'icon_url': str(ctx.author.avatar_url)
+            },
+            u'timestamp': firestore.SERVER_TIMESTAMP
+        })
 
-    preview.description = answer
-    await previewMsg.edit(embed=preview)
+        # TODO: Send the embed in FAQ channel
+        await faqChannel.send(embed=preview)
 
-    # get mesage link
-    await queryMsg.edit(content="What is the message link to the original question?")
-    linkMsg = await bot.wait_for('message', check=validate_url)
-    link = linkMsg.content
-    await linkMsg.delete()
+        await queryMsg.edit(content=f"Question \"{question}\" stored successfully.")
+    elif action == 'show':
+        ref = db.collection('faq').document(str(category.id)).collection('faqs')
+        docs = ref.order_by('timestamp', direction=firestore.Query.DESCENDING).stream()
+        result = discord.Embed(
+            title=f'FAQs for {category.name}'
+        )
+        for doc in docs:
+            info = doc.to_dict()
+            result.add_field(
+                name=info['question'], 
+                value=f"{info['answer']}\n[Jump to context]({info['link']})",
+                inline=False
+            )  
+        if result.fields:
+            await ctx.send(embed=result)
+        else:
+            await ctx.send("No FAQ entries found.")
 
-    preview.description += f'\n[Jump to context]({link})'
-    await previewMsg.edit(embed=preview)
-    
-    # store in firestore
-    db.collection('faq').document(str(category.id)).collection('faqs').add({
-        u'question': question,
-        u'answer': answer,
-        u'link': link,
-        u'timestamp': firestore.SERVER_TIMESTAMP
-    })
+    elif action == 'remove':
+        ref = db.collection('faq').document(str(category.id)).collection('faqs')
 
-    # TODO: Send the embed in FAQ channel
-    await faqChannel.send(embed=preview)
+        await ctx.send("What was the question?")
+        question = await bot.wait_for('message', check=validate_msg)
+        question = question.content
 
-    await queryMsg.edit(content=f"Question \"{question}\" stored successfully.")
-
-
-@bot.command(name='show')
-async def show_faq(ctx):
-    category = ctx.channel.category
-
-    # validate the category and extract faq channel
-    if not category:
-        await ctx.send('This command doesn\'t work here!')
-        return
-    else:
-        faqChannels = [x for x in category.channels if x.name == 'faq']
-        if not faqChannels:
-            await ctx.send('This command doesn\'t work here!')
+        matches = ref.where('question', '==', question).get()
+        if not matches:
+            await ctx.send(f"No question with title \"{question}\" was found.")
             return
 
-    ref = db.collection('faq').document(str(category.id)).collection('faqs')
-    docs = ref.order_by('timestamp', direction=firestore.Query.DESCENDING).stream()
-    result = ""
-    for doc in docs:
-        info = doc.to_dict()
-        print(info)
-        result += f"Question: {info['question']} \nAnswer: {info['answer']} \nLink: {info['link']} \n\n"
-    
-    if result:
-        await ctx.send(result)
+        match = matches[0]
+        info = match.to_dict()
+        preview = discord.Embed(
+            title=info['question'],
+            description=f"{info['answer']}\n[Jump to context]({info['link']})",
+        )
+        preview.set_author(name=info['author']['name'], icon_url=info['author']['icon_url'])
+
+        await ctx.send("Is this the correct question? (yes/no) \n\n", embed=preview)
+
+        confirm = await bot.wait_for('message', check=validate_msg)
+        print(confirm)
+        if confirm.content.lower() == 'yes':
+            ref.document(match.id).delete()
+            await ctx.send(f"Question with title \"{question}\" successfully deleted")
+        else:
+            await ctx.send("Operation cancelled.")
     else:
-        await ctx.send("No FAQ entries found.")
-
-
-@bot.command(name='delete')
-async def delete_faq(ctx, channel):
-    channel = int(re.match(r'<#(\d*)>', channel).groups()[0])
-    chan: discord.TextChannel = bot.get_channel(channel)
-
-    # make sure the message is not empty and is in the same channel
-    def not_empty(m):
-        return len(m.content) > 0 and m.channel == chan and m.author != bot.user
-
-    faqs = db.collection(u'faq')
-
-    await chan.send("What was the message question?")
-    question = await bot.wait_for('message', check=not_empty)
-    question = question.content
-
-    matches = faqs.where(u'question', u'==', question).get()
-    if not matches or len(matches) == 0:
-        await chan.send(f"No question with title \"{question}\" was found.")
-        return
-
-    match = matches[0]
-    info = match.to_dict()
-    questions = f"Question: {info['question']} \nAnswer: {info['answer']} \nLink: {info['link']} \n\n"
-
-    await chan.send("Is this the correct question? (yes/no) \n\n" + questions)
-
-    confirm = await bot.wait_for('message', check=not_empty)
-    print(confirm)
-    if confirm.content.lower() == 'yes':
-        faqs.document(question).delete()
-        await chan.send(f"Question with title \"{question}\" successfully deleted")
-    else:
-        await chan.send("Operation cancelled.")
-
-
-@bot.command(name='send')
-async def send(ctx, channel, message):
-    channel = int(re.match(r'<#(\d*)>', channel).groups()[0])
-    chan: discord.TextChannel = bot.get_channel(channel)
-    msg = message
-    print(channel, msg)
-    await chan.send(msg)
+        await ctx.send('Usage: `.faq add`, `.faq remove`, or `.faq show`')
 
 @bot.command(name='create')
 async def create(ctx, name, moderator):
