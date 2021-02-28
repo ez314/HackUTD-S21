@@ -74,7 +74,7 @@ export default function Dashboard({ user }) {
           <div className="grid grid-cols-7 gap-4">
             {AGENDA.map((day, id) => (
               <div className={"rounded-xl shadow-md p-4 bg-gray-800"}>
-                <h1 className="text-lg text-center">{WEEKDAYS[id]}</h1>
+                <h1 className="text-lg text-center">{WEEKDAYS[id % 7]}</h1>
                 {day.map((item) => (
                   <div className="bg-gray-600 hover:bg-gray-500 cursor-pointer p-2 my-4 rounded-md shadow-sm">
                     <p className="text-md font-bold">{item.course}</p>
