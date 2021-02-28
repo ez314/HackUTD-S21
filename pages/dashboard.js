@@ -6,7 +6,7 @@ import URL from '../lib/url';
 export default function Dashboard({ user }) {
   const [courses, setCourses] = useState(null);
 
-  if (user.id === undefined) {
+  if (user === undefined || user.id === undefined) {
     return <p>Not logged in!</p>;
   }
 
