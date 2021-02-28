@@ -42,5 +42,5 @@ export default async function handler(req, res) {
   //   "returned": json
   // })
   res.setHeader('Set-Cookie', serialize('token', json.access_token, { path: '/' }));
-  res.redirect("/"); // Redirecting to main page
+  res.redirect("/console"); // Redirecting to main page
 }
