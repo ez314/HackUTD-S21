@@ -13,8 +13,7 @@ export default function Dashboard({ user }) {
     fetch(`http://localhost:3000/api/roles?id=${user.id}`)
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
-        if (data) setCourses(data);
+        if (typeof data.map === "function") setCourses(data);
       });
   }
 
@@ -31,7 +30,7 @@ export default function Dashboard({ user }) {
       </div>
       <div className="flex-1">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 m-4">
-          {courses !== null && courses !== undefined && courses !== [] && 
+          {courses !== null ?
             courses.map((course) => (
               <Link href={`/courses/${course.faqID}`}>
                 <div
@@ -41,7 +40,7 @@ export default function Dashboard({ user }) {
                   {course.name}
                 </div>
               </Link>
-            ))}
+            )) : <p></p>}
         </div>
       </div>
       <div></div>
