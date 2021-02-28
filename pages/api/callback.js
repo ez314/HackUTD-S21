@@ -12,9 +12,11 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
 export default async function handler(req, res) {
   const accessCode = req.query.code;
-  if (!accessCode)
+  if (!accessCode) {
     // If something went wrong and access code wasn't given
-    return resp.send("No access code specified");
+    // return res.send("No access code specified");
+    return res.redirect("/"); 
+  }
 
   // Creating form to make request
   const data = new FormData();
