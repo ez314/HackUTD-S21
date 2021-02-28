@@ -164,9 +164,12 @@ async def faq(ctx, action='unknown'):
         await ctx.send('Usage: `.faq add`, `.faq remove`, or `.faq show`')
 
 @bot.command(name='create')
-async def create(ctx, name, moderator):
+async def create(ctx, name='unknown', moderator='unknown'):
     global reactionChannel
     guild = ctx.guild
+
+    if name == 'unknown' or moderator == 'unknown':
+        return await ctx.send('Usage: `.create "<class name>" @<moderator>`')
 
     # make sure this doesn't exist yet
     docs = db.collection('faq').where('name', '==', name).get()
@@ -267,7 +270,7 @@ async def create(ctx, name, moderator):
     await ctx.send('Done')
     
 @bot.command(name='send')
-async def create(ctx, channel):
+async def send(ctx, channel):
     channel = int(re.match(r'<#(\d*)>', channel).groups()[0])
     chan = bot.get_channel(channel)
 
