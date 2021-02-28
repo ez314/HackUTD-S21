@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import Navbar from './navbar.js';
-import Dashboard from './dashboard.js'
+import Navbar from "./navbar.js";
+import Dashboard from "./dashboard.js";
 import cookieCutter from "cookie-cutter";
-import Router from 'next/router';
+import Router from "next/router";
+import LandingPage from './landing';
 
 export default function Welcome(props) {
   const [user, setUser] = useState({});
@@ -10,9 +11,6 @@ export default function Welcome(props) {
   useEffect(() => {
     const { pathname } = Router;
     const token = cookieCutter.get("token");
-    if (!token || token === "") {
-      Router.push("/api/login");
-    }
     call();
     console.log(cookieCutter.get("token"));
   }, []);
@@ -22,15 +20,27 @@ export default function Welcome(props) {
       headers: { Authorization: `Bearer ${cookieCutter.get("token")}` },
     });
     const json = await data.json();
-    if (!json.username) return Router.push("/api/login");
+    if (!json.username) {
+      return;
+    }
     setUser(json);
     console.log(json);
   };
 
+  const logout = () => {
+    setUser({});
+  }
+
   return (
-    <div className="w-full mx-0">
-      <Navbar />
-      <Dashboard user={user} />
-    </div>
+    <>
+      {user.id !== undefined ? (
+        <div className="w-full mx-0">
+          <Navbar logout={logout} />
+          <Dashboard user={user} />
+        </div>
+      ) : (
+        <LandingPage />
+      )}
+    </>
   );
 }
