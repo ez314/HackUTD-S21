@@ -208,6 +208,9 @@ async def create(ctx, name, moderator):
     faqChannel = await category.create_text_channel('faq')
     faqPerms = faqChannel.overwrites_for(role)
     faqPerms.send_messages = False
+    announcementsChannel = await category.create_text_channel('announcements')
+    announcementsPerms = announcementsChannel.overwrites_for(role)
+    announcementsPerms.send_messages = False
     await faqChannel.set_permissions(role, overwrite=faqPerms)
     await category.create_voice_channel('Study Room 1')
     await category.create_voice_channel('Study Room 2')
@@ -263,6 +266,14 @@ async def create(ctx, name, moderator):
 
     await ctx.send('Done')
     
+@bot.command(name='send')
+async def create(ctx, channel):
+    channel = int(re.match(r'<#(\d*)>', channel).groups()[0])
+    chan = bot.get_channel(channel)
+
+    jsonStr = re.match(r'.*?(\{.*\}).*?', ctx.message.content, re.DOTALL).groups()[0]
+
+    await chan.send(embed=discord.Embed.from_dict(json.loads(jsonStr)))
     
 # reaction roles
 
