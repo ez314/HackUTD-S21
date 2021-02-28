@@ -4,9 +4,7 @@ import URL from '../../lib/url';
 
 const dev = process.env.NODE_ENV !== "production";
 let redirect_url = `${URL}/api/callback`;
-if (!dev) {
-    redirect_url = ""; // SET DEPLOYED ENDPOINT TODO
-}
+
 const redirect = encodeURIComponent(redirect_url);
 
 export default async function handler(req, res) {
