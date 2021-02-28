@@ -5,6 +5,7 @@ import re
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
+import urllib.parse
 
 # set up intents
 intents = discord.Intents.all()
@@ -19,10 +20,22 @@ cred = credentials.Certificate("firebase_admin.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
+reactionChannel = None
+regional_indicators = ['🇦','🇧','🇨','🇩','🇪','🇫','🇬','🇭','🇮','🇯','🇰','🇱','🇲','🇳','🇴','🇵','🇶','🇷','🇸','🇹','🇺','🇻','🇼','🇽','🇾','🇿']
+
+def dictToUrl(d):
+    return f'http://x.co?{urllib.parse.quote_plus(json.dumps(d))}'
+
+def urlToDict(u):
+    return json.loads(urllib.parse.unquote_plus(u[12:]))
+
 
 @bot.event
 async def on_ready():
+    global reactionChannel
     print(f'Logged in as {bot.user}!')
+    # resolve reaction channel
+    reactionChannel = await bot.fetch_channel(botconfig['reactionChannelID'])
 
 
 @bot.command(name='faq')
@@ -152,6 +165,7 @@ async def faq(ctx, action='unknown'):
 
 @bot.command(name='create')
 async def create(ctx, name, moderator):
+    global reactionChannel
     guild = ctx.guild
 
     # make sure this doesn't exist yet
@@ -159,9 +173,6 @@ async def create(ctx, name, moderator):
     if docs:
         await ctx.send("That name is taken.")
         return
-
-
-    print(moderator)
     
     # resolve ping
     match = re.match(r'<@!?(\d{17,20})>', moderator)
@@ -201,7 +212,6 @@ async def create(ctx, name, moderator):
     await category.create_voice_channel('Study Room 1')
     await category.create_voice_channel('Study Room 2')
 
-
     # add results to firestore
     db.collection('faq').document(str(category.id)).set({
         'name': name,
@@ -214,7 +224,42 @@ async def create(ctx, name, moderator):
         'faqID': faqChannel.id,
     })
 
-    # TODO: register reaction role
+    # Register reaction role
+    # first, we need to get the message
+    
+    reactionMsg = None
+    async for message in reactionChannel.history(limit=10):
+        if message.author == bot.user and message.embeds:
+            if len(message.reactions) < 20:
+                reactionMsg = message
+            break
+
+    if reactionMsg:
+        em = reactionMsg.embeds[0]
+
+        data = urlToDict(em.description.splitlines()[0][4:-1])
+        last = max(list(map(int, data.keys())))
+
+        reaction = regional_indicators[last+1]
+
+        data[last+1] = role.id
+        em.description = (
+                f"[\u200B]({dictToUrl(data)})\n" + 
+                '\n'.join(em.description.splitlines()[1:]) + 
+                f'\n{reaction} {name}'
+        )
+
+        await reactionMsg.edit(embed=em)
+        await reactionMsg.add_reaction(reaction)
+
+    # initialize new reaction mesage if none exists right now or previous one is full
+    else:
+        reaction = regional_indicators[0]
+        reactionMsg = await reactionChannel.send(embed=discord.Embed(
+            title='React to gain access to a class category',
+            description=f"[\u200B]({dictToUrl({0: role.id})})\n" + f'{reaction} {name}'
+        ))
+        await reactionMsg.add_reaction(reaction)
 
     await ctx.send('Done')
     
@@ -224,74 +269,52 @@ async def create(ctx, name, moderator):
 # add roles
 @bot.event
 async def on_raw_reaction_add(payload):
-    message_id = payload.message_id
+    # ignore other channels and self
+    if payload.channel_id != botconfig['reactionChannelID'] or payload.user_id == bot.user.id:
+        return
 
-    # message id of discord message
-    if message_id == 815329016973754369:
-        guild_id = payload.guild_id
-        guild = discord.utils.find(lambda g: g.id == guild_id, bot.guilds)
-        print('Reacted to text')
+    # fetch
+    reactionMsg = await reactionChannel.fetch_message(payload.message_id)
 
-        # role selection
-        if payload.emoji.name == 'CS1336':
-            role = discord.utils.get(guild.roles, name='CS 1336')
-        
-        elif payload.emoji.name == 'CS2336':
-            role = discord.utils.get(guild.roles, name='CS 2336')
-        
-        # role assignment
-        if role is not None:
-            member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
+    # resolve emoji
+    reaction = payload.emoji.name
+    idx = regional_indicators.index(reaction)
 
-            if member is not None:
-                await member.add_roles(role)
-                print('done')
-            
-            else:
-                print('Member not found.')
-        
-        else:
-            print('Role not found.')
+    # resolve role
+    em = reactionMsg.embeds[0]
+    data = urlToDict(em.description.splitlines()[0][4:-1])
+    roleId = data[str(idx)]
+    role = reactionMsg.guild.get_role(roleId)
 
+    # resolve user
+    member = reactionMsg.guild.get_member(payload.user_id)
+
+    await member.add_roles(role)
 
 # remove roles
 @bot.event
 async def on_raw_reaction_remove(payload):
-    message_id = payload.message_id
+    # ignore other channels and self
+    if payload.channel_id != botconfig['reactionChannelID'] or payload.user_id == bot.user.id:
+        return
 
-    # message id of discord message
-    if message_id == 815329016973754369:
-        guild_id = payload.guild_id
-        guild = discord.utils.find(lambda g: g.id == guild_id, bot.guilds)
-        print('Reacted to text')
+    # fetch
+    reactionMsg = await reactionChannel.fetch_message(payload.message_id)
 
-        # role selection
-        if payload.emoji.name == 'CS1336':
-            role = discord.utils.get(guild.roles, name='CS 1336')
-        
-        elif payload.emoji.name == 'CS2336':
-            role = discord.utils.get(guild.roles, name='CS 2336')
+    # resolve emoji
+    reaction = payload.emoji.name
+    idx = regional_indicators.index(reaction)
 
-        elif payload.emoji.name == 'prof1':
-            role = discord.utils.get(guild.roles, name='Professor 1')
+    # resolve role
+    em = reactionMsg.embeds[0]
+    data = urlToDict(em.description.splitlines()[0][4:-1])
+    roleId = data[str(idx)]
+    role = reactionMsg.guild.get_role(roleId)
 
-        elif payload.emoji.name == 'prof2':
-            role = discord.utils.get(guild.roles, name='Professor 2')
-        
-        
-        # role assignment
-        if role is not None:
-            member = discord.utils.find(lambda m: m.id == payload.user_id, guild.members)
+    # resolve user
+    member = reactionMsg.guild.get_member(payload.user_id)
 
-            if member is not None:
-                await member.remove_roles(role)
-                print('Removed')
-            
-            else:
-                print('Member not found.')
-        
-        else:
-            print('Role not found.')
+    await member.remove_roles(role)
 
 # Start the bot
 bot.run(botconfig['token'], bot=True)
