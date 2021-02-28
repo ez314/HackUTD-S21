@@ -5,7 +5,7 @@ import LandingPage from "./landing";
 
 export default function Welcome(props) {
   useEffect(async () => {
-    if (cookieCutter.get("token") !== "") {
+    if (!!(cookieCutter.get("token"))) {
       console.log(cookieCutter.get("token"));
       Router.push("/console");
     }
