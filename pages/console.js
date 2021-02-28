@@ -19,7 +19,7 @@ export default function Console() {
     }, []);
 
   return (
-    <div className="">
+    <div className="min-h-screen bg-gray-900">
       <Navbar logout={() => {setUser({})}} />
       <Dashboard user={user} />
     </div>

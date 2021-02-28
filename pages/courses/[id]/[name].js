@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import FAQ from "../../faq";
 import URL from "../../../lib/url";
 import cookieCutter from "cookie-cutter";
+import Navbar from "../../navbar";
 
 export default function Course() {
   const router = useRouter();
@@ -19,8 +20,9 @@ export default function Course() {
   }
 
   return (
-    <>
-      <div className="m-4">
+    <div className="min-h-screen bg-gray-800">
+      <Navbar logout={() => {}}/>
+      <div className="px-16 py-8">
         <div className="flex">
           <button
             className="p-2 rounded-xl mr-8 bg-blue-200 hover:bg-blue-400 cursor-pointer"
@@ -30,21 +32,14 @@ export default function Course() {
           >
             Back
           </button>
-          <h1 className="flex-1 font-bold text-3xl text-center place-self-center tracking-normal">FAQs for {name}</h1>
-          <button
-            className="p-2 rounded-xl bg-blue-200 hover:bg-blue-400 cursor-pointer"
-            onClick={() => {
-              cookieCutter.set("token", "");
-              router.push("/");
-            }}
-          >Log Out</button>
+          <h1 className="flex-1 font-bold text-3xl text-center text-blue-50 place-self-center tracking-normal">FAQs for {name}</h1>\
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           {data !== [] &&
-            data !== null &&
-            data.map((faq, index) => <FAQ faq={faq} key={index} />)}
+          data !== null &&
+          data.map((faq, index) => <FAQ faq={faq} key={index}/>)}
         </div>
       </div>
-    </>
+    </div>
   );
 }

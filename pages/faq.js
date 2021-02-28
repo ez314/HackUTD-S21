@@ -35,7 +35,7 @@ export default function FAQ({ faq }) {
     return <p>Not logged in</p>;
   }
   return (
-    <div className="p-4 bg-blue-200 markdown rounded-xl shadow-md">
+    <div className="p-8 bg-blue-200 markdown rounded-xl shadow-md">
       <div className="text-2xl font-semibold">
         <ReactMarkdown>{faq.question}</ReactMarkdown>
       </div>
@@ -43,7 +43,7 @@ export default function FAQ({ faq }) {
         Asked by <img src={faq.author.icon_url} className="rounded-full mx-1" width="24px"/>
         {faq.author ? faq.author.name : ""} {timeSince(new Date(faq.timestamp._seconds * 1000))} ago
       </p>
-      <ReactMarkdown>{faq.answer}</ReactMarkdown>
+      <ReactMarkdown className="font-light text-justify">{faq.answer}</ReactMarkdown>
     </div>
   );
 }
