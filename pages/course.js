@@ -1,14 +1,9 @@
-import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import FAQ from "../../faq";
-import URL from "../../../lib/url";
-import cookieCutter from "cookie-cutter";
-import Navbar from "../../navbar";
+import FAQ from "./faq";
+import URL from "../lib/url";
+import Navbar from "./navbar";
 
-export default function Coursef() {
-  const router = useRouter();
-  let { id, name } = router.query;
-
+export default function Course({ id, name }) {
   const [data, setData] = useState(null);
 
   if (data === null) {
@@ -20,18 +15,9 @@ export default function Coursef() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-800">
-      <Navbar logout={() => {}}/>
+    <div className="bg-gray-800">
       <div className="px-16 py-8">
         <div className="flex">
-          <button
-            className="p-2 rounded-xl mr-8 bg-blue-200 hover:bg-blue-400 cursor-pointer"
-            onClick={() => {
-              router.push("/");
-            }}
-          >
-            Back
-          </button>
           <h1 className="flex-1 font-bold text-3xl text-center text-blue-50 place-self-center tracking-normal">FAQs for {name}</h1>\
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
