@@ -1,7 +1,11 @@
 import ReactMarkdown from "react-markdown";
 
 export default function FAQ({faq}) {
-    console.log(faq);
+  if(faq === undefined || faq.author === undefined || faq.author.name === undefined) {
+    return (
+      <p>Not logged in</p>
+    )
+  }
   return (
     <div className="p-4 bg-blue-200 markdown">
       <div className="text-2xl"><ReactMarkdown>{faq.question}</ReactMarkdown></div>

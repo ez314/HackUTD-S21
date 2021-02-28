@@ -192,3 +192,4 @@ yarn-error.log*
 .vercel
 .env
 firebase_admin.js
+.next/

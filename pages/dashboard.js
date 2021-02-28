@@ -6,12 +6,12 @@ import URL from '../lib/url';
 export default function Dashboard({ user }) {
   const [courses, setCourses] = useState(null);
 
-  if (user.id === undefined) {
+  if (user === undefined || user.id === undefined) {
     return <p>Not logged in!</p>;
   }
 
   if (user.id !== undefined && courses === null) {
-    fetch(`{${URL}/api/roles?id=${user.id}`)
+    fetch(`${URL}/api/roles?id=${user.id}`)
       .then((res) => res.json())
       .then((data) => {
         if (typeof data.map === "function") setCourses(data);
