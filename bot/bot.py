@@ -208,6 +208,9 @@ async def create(ctx, name, moderator):
     faqChannel = await category.create_text_channel('faq')
     faqPerms = faqChannel.overwrites_for(role)
     faqPerms.send_messages = False
+    announcementsChannel = await category.create_text_channel('announcements')
+    announcementsPerms = announcementsChannel.overwrites_for(role)
+    announcementsPerms.send_messages = False
     await faqChannel.set_permissions(role, overwrite=faqPerms)
     await category.create_voice_channel('Study Room 1')
     await category.create_voice_channel('Study Room 2')
