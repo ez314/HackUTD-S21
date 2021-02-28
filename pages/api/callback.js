@@ -23,6 +23,7 @@ export default async function handler(req, res) {
   const data = new FormData();
   data.append("client_id", CLIENT_ID);
   data.append("client_secret", CLIENT_SECRET);
+  
   data.append("grant_type", "authorization_code");
   data.append("redirect_uri", redirect);
   data.append("scope", "identify");
@@ -35,6 +36,12 @@ export default async function handler(req, res) {
       body: data,
     })
   ).json();
-  res.setHeader('Set-Cookie', serialize('token', json.access_token, { path: '/' }));
-  res.redirect("/"); // Redirecting to main page
+  res.json({
+    "CLIENT_SECRET": CLIENT_SECRET,
+    "CLIENT_ID": CLIENT_ID,
+    "code": accessCode,
+    "returned": json
+  })
+  // res.setHeader('Set-Cookie', serialize('token', json.access_token, { path: '/' }));
+  // res.redirect("/"); // Redirecting to main page
 }
