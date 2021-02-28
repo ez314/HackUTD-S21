@@ -245,7 +245,7 @@ async def create(ctx, name, moderator):
 
         reaction = regional_indicators[last+1]
 
-        data[last+1] = role.id
+        data[last+1] = [role.id, category.id]
         em.description = (
                 f"[\u200B]({dictToUrl(data)})\n" + 
                 '\n'.join(em.description.splitlines()[1:]) + 
@@ -260,7 +260,7 @@ async def create(ctx, name, moderator):
         reaction = regional_indicators[0]
         reactionMsg = await reactionChannel.send(embed=discord.Embed(
             title='React to gain access to a class category',
-            description=f"[\u200B]({dictToUrl({0: role.id})})\n" + f'{reaction} {name}'
+            description=f"[\u200B]({dictToUrl({0: [role.id, category.id]})})\n" + f'{reaction} {name}'
         ))
         await reactionMsg.add_reaction(reaction)
 
@@ -294,13 +294,18 @@ async def on_raw_reaction_add(payload):
     # resolve role
     em = reactionMsg.embeds[0]
     data = urlToDict(em.description.splitlines()[0][4:-1])
-    roleId = data[str(idx)]
+    roleId, categoryId = data[str(idx)]
     role = reactionMsg.guild.get_role(roleId)
 
     # resolve user
     member = reactionMsg.guild.get_member(payload.user_id)
 
     await member.add_roles(role)
+
+    # update firestore
+    db.collection('user').document(str(payload.user_id)).set({
+        'courses': firestore.ArrayUnion([str(categoryId)])
+    }, merge=True)
 
 # remove roles
 @bot.event
@@ -319,13 +324,18 @@ async def on_raw_reaction_remove(payload):
     # resolve role
     em = reactionMsg.embeds[0]
     data = urlToDict(em.description.splitlines()[0][4:-1])
-    roleId = data[str(idx)]
+    roleId, categoryId = data[str(idx)]
     role = reactionMsg.guild.get_role(roleId)
 
     # resolve user
     member = reactionMsg.guild.get_member(payload.user_id)
 
     await member.remove_roles(role)
+
+        # update firestore
+    db.collection('user').document(str(payload.user_id)).set({
+        'courses': firestore.ArrayRemove([str(categoryId)])
+    }, merge=True)
 
 # Start the bot
 bot.run(botconfig['token'], bot=True)
