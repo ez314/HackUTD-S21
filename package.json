@@ -20,7 +20,8 @@
     "node-fetch": "^2.6.1",
     "nookies": "^2.5.2",
     "react": "17.0.1",
-    "react-dom": "17.0.1"
+    "react-dom": "17.0.1",
+    "react-markdown": "^5.0.3"
   },
   "devDependencies": {
     "autoprefixer": "^10.2.4",

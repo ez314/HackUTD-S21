@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Navbar from "./navbar.js";
 import Dashboard from "./dashboard.js";
 import cookieCutter from "cookie-cutter";
-import Router from "next/router";
+import Router, { useRouter } from "next/router";
 import LandingPage from './landing';
 
 export default function Welcome(props) {

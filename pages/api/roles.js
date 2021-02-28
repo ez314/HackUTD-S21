@@ -10,10 +10,9 @@ async function check(courses) {
         .collection("faq")
         .doc(course)
         .get()
-        .then((res) => res.data())
+        .then((res) => {return {...res.data(), id: course}})
     );
   }
-  console.log(result);
   return result;
 }
 
@@ -21,10 +20,10 @@ export default async function handler(req, res) {
   const id = req.query.id;
   await db
     .collection("user")
-    .where("id", "==", id)
+    .doc(id)
     .get()
     .then(async (querysnapshot) => {
-      const courses = querysnapshot.docs[0].data()["courses"];
+      const courses = querysnapshot.data()["courses"];
       res.json(await check(courses));
     })
     .catch((error) => {

@@ -32,9 +32,9 @@ export default function Dashboard({ user }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 m-4">
           {courses !== null ?
             courses.map((course) => (
-              <Link href={`/courses/${course.faqID}`}>
+              <Link href={`/courses/${course.id}/${course.name}`}>
                 <div
-                  id={course.faqID}
+                  id={course.id}
                   className="bg-blue-200 p-4 text-center rounded-lg shadow-3 text-xl hover:bg-blue-400 cursor-pointer"
                 >
                   {course.name}
