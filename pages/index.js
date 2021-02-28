@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import cookieCutter from "cookie-cutter";
 import Router from "next/router";
 import LandingPage from "./landing";
+import Head from 'next/head'
 
 export default function Welcome(props) {
   useEffect(async () => {
@@ -11,5 +12,12 @@ export default function Welcome(props) {
     }
   }, []);
 
-  return <LandingPage />;
+  return (
+    <>
+    <Head>
+      <title>Solace</title>
+    </Head>
+    <LandingPage />
+    </>
+  );
 }
