@@ -31,7 +31,7 @@ export default function Dashboard({ user }) {
       </div>
       <div className="flex-1">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 m-4">
-          {courses !== undefined &&
+          {courses !== null &&
             courses.map((course) => (
               <Link href={`/courses/${course.faqID}`}>
                 <div
