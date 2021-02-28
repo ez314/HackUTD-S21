@@ -2,10 +2,9 @@ import Course from "./course";
 import FAQ from "./faq";
 
 export default function Modal({ close, info }) {
-  if (info === null) {
-    return <></>;
-  }
   return (
+    <>
+    {info !== null && info !== undefined ? 
     <div className="fixed z-20 inset-0 overflow-y-auto">
       <div className="flex items-end justify-center min-h-screen bg-black bg-opacity-75 pt-4 px-4 pb-20 text-center sm:block sm:p-0">
 
@@ -20,5 +19,7 @@ export default function Modal({ close, info }) {
         </div>
       </div>
     </div>
+    : <></> }
+    </>
   );
 }
