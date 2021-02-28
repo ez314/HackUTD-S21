@@ -35,15 +35,15 @@ export default function FAQ({ faq }) {
     return <p>Not logged in</p>;
   }
   return (
-    <div className="p-8 bg-blue-200 markdown rounded-xl shadow-md">
-      <div className="text-2xl font-semibold">
+    <div className="p-8 bg-gray-700 markdown rounded-xl shadow-md">
+      <div className="text-gray-100 text-2xl font-semibold">
         <ReactMarkdown>{faq.question}</ReactMarkdown>
       </div>
-      <p className="text-gray-600 font-light flex place-self-center">
-        Asked by <img src={faq.author.icon_url} className="rounded-full mx-1" width="24px"/>
-        {faq.author ? faq.author.name : ""} {timeSince(new Date(faq.timestamp._seconds * 1000))} ago
+      <p className="text-gray-400 font-light flex place-self-center">
+        Added by <img src={faq.author.icon_url} className="rounded-full mx-1" width="24px"/>
+        <span className="text-gray-300">{faq.author ? faq.author.name : ""}</span>&nbsp;{timeSince(new Date(faq.timestamp._seconds * 1000))} ago
       </p>
-      <ReactMarkdown className="font-light text-justify">{faq.answer}</ReactMarkdown>
+      <ReactMarkdown className="text-gray-200 font-light text-justify">{faq.answer}</ReactMarkdown>
     </div>
   );
 }

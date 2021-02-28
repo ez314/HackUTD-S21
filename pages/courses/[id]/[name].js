@@ -20,14 +20,14 @@ export default function Coursef() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-800">
+    <div className="min-h-screen bg-gray-900">
       <Navbar logout={() => {}}/>
       <div className="px-16 py-8">
         <div className="flex">
           <button
             className="p-2 rounded-xl mr-8 bg-blue-200 hover:bg-blue-400 cursor-pointer"
             onClick={() => {
-              router.push("/");
+              router.push("/console");
             }}
           >
             Back

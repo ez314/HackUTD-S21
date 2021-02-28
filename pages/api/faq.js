@@ -6,6 +6,7 @@ export default async function handler(req, res) {
     .collection("faq")
     .doc(id)
     .collection("faqs")
+    .orderBy("timestamp", "desc")
     .get()
     .then((querysnapshot) => {
       let result = [];

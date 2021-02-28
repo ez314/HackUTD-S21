@@ -15,16 +15,14 @@ export default function Course({ id, name }) {
   }
 
   return (
-    <div className="bg-gray-800">
-      <div className="px-16 py-8">
-        <div className="flex">
-          <h1 className="flex-1 font-bold text-3xl text-center text-blue-50 place-self-center tracking-normal">FAQs for {name}</h1>\
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-          {data !== [] &&
-          data !== null &&
-          data.map((faq, index) => <FAQ faq={faq} key={index}/>)}
-        </div>
+    <div className="bg-gray-800 px-16 pb-16">
+      <h1
+        className="flex-1 font-bold text-3xl text-center text-blue-50 place-self-center tracking-normal transform -translate-y-6">FAQs
+        for {name}</h1>\
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {data !== [] &&
+        data !== null &&
+        data.map((faq, index) => <FAQ faq={faq} key={index}/>)}
       </div>
     </div>
   );
