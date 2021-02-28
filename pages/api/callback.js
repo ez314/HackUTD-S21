@@ -2,9 +2,10 @@ require("dotenv").config();
 const FormData = require('form-data');
 import nookies from 'nookies'
 import { serialize } from 'cookie';
+import URL from '../../lib/url'
 
 const dev = process.env.NODE_ENV !== "production";
-let redirect = "http://localhost:3000/api/callback";
+let redirect = `${URL}/api/callback`;
 if (!dev) {
     redirect = ""; // SET DEPLOYED ENDPOINT TODO
 }

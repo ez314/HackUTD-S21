@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Navbar from "../../navbar";
 import FAQ from '../../faq';
+import URL from '../../../lib/url';
 
 export default function Course() {
   const router = useRouter();
@@ -10,7 +11,7 @@ export default function Course() {
   const [data, setData] = useState(null);
 
   if (data === null) {
-    fetch(`http://localhost:3000/api/faq?id=${id}`)
+    fetch(`${URL}/api/faq?id=${id}`)
       .then((a) => a.json())
       .then((res) => {
         setData(res);
